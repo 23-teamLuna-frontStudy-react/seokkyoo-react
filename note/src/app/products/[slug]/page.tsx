@@ -1,5 +1,10 @@
+import GoProductsButton from "@/components/GoProductsButton";
+import { getProduct, getProducts } from "@/services/products";
+import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+
+export const revalidate = 3;
 
 type Props = {
   params: {
@@ -13,17 +18,32 @@ export function generateMetadata({ params }: Props) {
   };
 }
 
-export default function PantsPage({ params }: Props) {
-  if (params.slug === "nothing") {
-    notFound();
+export default async function ProductPage({ params: { slug } }: Props) {
+  const product = await getProduct(slug);
+
+  if (!product) {
+    redirect("/products");
+    // notFound();
   }
 
-  return <h1>{params.slug} 제품 설명 페이지</h1>;
+  return (
+    <>
+      <h1>{product.name} 제품 설명 페이지</h1>
+      <Image
+        src={`/images/${product.image}`}
+        alt={product.name}
+        width="300"
+        height="300"
+      />
+      <GoProductsButton />
+    </>
+  );
 }
 
-export function generateStaticParams() {
-  const products = ["pants", "skirt"];
+export async function generateStaticParams() {
+  // 모든 제품의 페이지들을 미리 만들어 둘 수 있게 해줄 것임 (SSG)
+  const products = await getProducts();
   return products.map((product) => ({
-    slug: product,
+    slug: product.id,
   }));
 }
