@@ -29,7 +29,7 @@ const nextConfig = {
         destination: "/about/me/ellie",
       },
       {
-        source: "items/:slug",
+        source: "/items/:slug",
         destination: "/products/:slug",
       },
     ];
