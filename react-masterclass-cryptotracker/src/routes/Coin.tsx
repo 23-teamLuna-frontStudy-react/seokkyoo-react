@@ -4,6 +4,7 @@ import { useLocation, useParams, Outlet, useMatch } from "react-router";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
+import { Helmet } from "react-helmet";
 
 const Title = styled.h1`
   font-size: 48px;
@@ -137,11 +138,25 @@ function Coin() {
   );
   const { isLoading: tickerLoading, data: tickersData } = useQuery<PriceData>(
     ["tickers", coinId],
-    () => fetchCoinTickers(String(`${coinId}`!))
+    () => fetchCoinTickers(String(`${coinId}`!)),
+    {
+      refetchInterval: 5000,
+    }
   );
   const loading = infoLoading || tickerLoading;
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+        </title>
+        <link
+          rel="icon"
+          type="image/png"
+          href={`https://static.coinpaprika.com/coin/${coinId}/logo.png`}
+          sizes="16x16"
+        />
+      </Helmet>
       <Header>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
@@ -161,8 +176,8 @@ function Coin() {
               <span>${infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+              <span>Price:</span>
+              <span>{tickersData?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -178,13 +193,26 @@ function Coin() {
           </Overview>
           <Tabs>
             <Tab isActive={chartMatch !== null}>
-              <Link to={`/${coinId}/chart`}>Chart</Link>
+              <Link to={`/${coinId}/chart`} state={{ coinId }}>
+                Chart
+              </Link>
             </Tab>
             <Tab isActive={priceMatch !== null}>
-              <Link to={`/${coinId}/price`}>Price</Link>
+              <Link to={`/${coinId}/price`} state={{ coinId }}>
+                Price
+              </Link>
             </Tab>
           </Tabs>
-          <Outlet />
+          <Outlet
+            context={{
+              coinId: coinId,
+              coinName: state?.name
+                ? state.name
+                : loading
+                ? "Loading..."
+                : infoData?.name,
+            }}
+          />
         </>
       )}
     </Container>
