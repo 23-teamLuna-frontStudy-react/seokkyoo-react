@@ -2,6 +2,8 @@ import { useQuery } from "react-query";
 import { useLocation, useOutletContext, useParams } from "react-router-dom";
 import { fetchCoinHistory } from "../api";
 import ApexChart from "react-apexcharts";
+import { useRecoilValue } from "recoil";
+import { isdarkAtom } from "../atoms";
 
 interface ICoinInfo {
   coinId: string;
@@ -20,6 +22,8 @@ interface IHistorical {
 }
 
 function Chart() {
+  const isDark = useRecoilValue(isdarkAtom);
+
   const params = useParams();
   // console.log(params);
   // const { state } = useLocation();
@@ -67,7 +71,7 @@ function Chart() {
           ]}
           options={{
             theme: {
-              mode: "dark",
+              mode: isDark ? "dark" : "light",
             },
             chart: {
               height: 500,
